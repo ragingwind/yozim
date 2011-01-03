@@ -1,0 +1,612 @@
+<!--
+ * Copyright (c) 2010 devnight.net. All rights reserved.  Use of this
+ * source code is governed by a MIT license that can be found in the
+ * LICENSE file.
+-->
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="Content-type" content="text/html; charset=utf-8">
+	<script src="js/jquery-1.4.4.min.js"></script>
+<!-- 
+ * Disable features.
+	<script src="js/imageinfo/binaryajax.js"></script>
+	<script src="js/imageinfo/imageinfo.js"></script>
+	<script src="js/imageinfo/exif.js"></script>
+-->
+	<script src="js/dncontrols.js"></script>
+	<link href="css/dncontrols-twitter.css" media="screen, projection" rel="stylesheet" type="text/css">
+	<link rel="stylesheet" href="font/stylesheet.css" type="text/css" charset="utf-8">
+</head>
+<style>
+* {
+	font: 1em 'Daum_Regular', Arial, sans-serif;letter-spacing: 0;
+}
+
+body {
+	padding:0px;
+	margin:0px;
+	width:490px;
+	height:212px;
+}
+
+h1 {
+	font-size: 1em;
+	padding: 0px;
+	margin: 0px;
+	text-decoration:none;
+	font-weight:normal;
+}
+
+h2 {
+	font-size: 0.8em;
+	padding: 0px;
+	margin: 0px;
+	text-decoration:none;
+	font-weight:normal;
+}
+
+img {
+	border-style: none;
+	border:none
+}
+
+#doc {
+	position:absolute;
+	width:99%;
+	height:99%;
+	background-color:#eee;
+	background: -webkit-gradient(linear,0 0,0 100%,from(#eee),to(#eaeaea));
+	border:1px solid #999;
+	-webkit-border-radius: 8px;
+}
+
+#top {
+	border:0px solid black;
+	margin: 10px 10px 0px 10px;
+	height:30px;
+	vertical-align:middle;
+	overflow: hidden;
+}
+
+#middle {
+	margin: 0px 10px 10px 10px;
+	overflow: hidden;
+}
+
+#archive {
+	overflow: hidden;
+	padding:0px;
+	margin:0px;
+}
+
+#attachments-wrap {
+	overflow: hidden;
+	float:left;
+	position:relative;
+	z-index:100;
+}
+
+#attachments {
+	/* -webkit-border-radius: 8px; */
+	/* border:6px solid rgba(244, 68, 110, 0.1); */
+	width:110px;
+	height:100px;
+}
+
+#thumbnails {
+	float:left;
+	overflow:hidden;
+	background-color:white;
+	padding:4px;
+	border:1px solid #888;
+	-webkit-border-radius: 8px;
+}
+
+#thumbnail {
+	width:96px;
+	height:96px;
+	vertical-align:top;
+	border:0px solid white;
+	text-decoration:none;
+	margin:0px;
+	cursor:pointer;
+}
+
+#messages {
+	position:relative;
+	overflow: hidden;
+	top:0px;
+	left:0px;
+	width:464px;
+	height:122px;
+	margin-bottom:3px;
+}
+
+#message {
+	font: 0.9em 'Daum_Regular';
+	width:100%;
+	height:100%;
+}
+
+#message:hover {
+}
+
+#message:focus {
+	border:1px solid rgba(244, 68, 110, 1.0);
+}
+
+.alert {
+	position:absolute;
+	overflow: hidden;
+	width:290px;
+	height:32px;
+	-webkit-border-top-left-radius: 8px;
+	-webkit-border-top-right-radius: 8px;
+	border:3px solid #fff;
+	border-bottom:0px solid #fff;
+	background-color:#eee;
+	background: -webkit-gradient(linear, 0% 0%, 0% 100%, from(#E8E8E8), to(#E8E8E8), color-stop(.5,#d3d3d3));
+	-webkit-box-shadow:0px -1px 4px #111;
+	text-align:center;
+	top:177px;
+	left:100px;
+	opacity:0;
+}
+
+.alert-text {
+	text-shadow: 0.0em 0.1em 0.1em #eee;
+	margin-top:0.5em;
+	font-size:0.5em;
+	color:#111;
+}
+
+#post {
+	background-position: 0px 0px;
+	background-image:url("image/button.post.png");
+	background-repeat:no-repeat;
+	width:106px;
+	height:27px;
+	border:0px solid white;
+}
+
+#post:hover, #post:focus {
+	background-position: 0px -27px;
+	background-image:url("image/button.post.png");
+	background-repeat:no-repeat;
+	border:0px solid white;
+}
+
+#post:active {
+	background-position: 0px 0px;
+	background-image:url("image/button.post.png");
+	background-repeat:no-repeat;
+	border:0px solid white;
+}
+
+#activity-indicators {
+	visibility:visible;
+	position:absolute;
+	top:4px;
+	left:4px;
+	width:98px;
+	height:98px;
+}
+
+#buttons {
+	vertical-align:middle;
+}
+
+.button {
+	padding:0px;
+	margin:0px;
+}
+
+.button-text {
+	margin-top:4px;
+}
+
+.button-left {
+	float:left;
+}
+
+.button-right {
+	float:right;
+	margin-left:5px;
+}
+
+
+#thumbnail-checker {
+	margin:0px;
+	padding:0px;
+	margin-right:5px;
+}
+
+#thumbnavis {
+	overflow:hidden;
+	width:100px;
+	position:relative;
+	padding-top:2px;
+}
+
+.thumbnavi-prev {
+	background-position: 0px 0px;
+	background-image: url("image/button.thumbnavi.png");
+	background-repeat: no-repeat;
+	float: left;
+	width: 18px;
+	height: 16px;
+	cursor: pointer;
+	color: #3B5998;
+	text-decoration: none;
+}
+
+.thumbnavi-prev:hover, .thumbnavi-prev:focus {
+	background-position: -73px 0px;
+	background-image: url("image/button.thumbnavi.png");
+	background-repeat: no-repeat;
+}
+
+.thumbnavi-prev:active {
+	background-position: 0px 0px;
+	background-image: url("image/button.thumbnavi.png");
+	background-repeat: no-repeat;
+}
+
+.thumbnavi-next {
+	background-position: -18px 0px;
+	background-image: url("image/button.thumbnavi.png");
+	background-repeat: no-repeat;
+	float: left;
+	width: 18px;
+	height: 16px;
+	cursor: pointer;
+	color: #3B5998;
+	text-decoration: none;
+	vertical-align:middle;
+}
+
+.thumbnavi-next:hover, .thumbnavi-next:focus {
+	background-position: -91px 0px;
+	background-image: url("image/button.thumbnavi.png");
+	background-repeat: no-repeat;
+}
+
+.thumbnavi-next:active {
+	background-position: -18px 0px;
+	background-image: url("image/button.thumbnavi.png");
+	background-repeat: no-repeat;
+}
+
+#thumbnavi-buttons {
+	float:left;
+}
+
+#tumbnail-count {
+	float:right;
+	font-size:0.1em;
+	line-height: 1.6em;
+	text-align:right;
+	margin-right:0.5em;
+}
+
+.registers {
+	position:absolute;
+	width:1px;
+	height:1px;	
+	top:10px;
+	left:10px;
+	overflow:hidden;
+	background: -webkit-gradient(linear,0 0,0 100%,from(#eee),to(#eaeaea));
+}
+
+.clipboard {
+	width:1px;
+	height:1px;
+	text-decoration:none;
+	-webkit-border-radius: 0px;
+	border:0px solid rgba(255,255,255,0);
+	background-color:rgba(255,255,255,0);
+	-webkit-box-shadow:0px 0px 0px rgba(255,255,255,0);
+}
+
+.clipboard:hover, .clipboard:focus, .clipboard:active {
+	text-decoration:none;
+	-webkit-border-radius: 0px;
+	border:0px solid rgba(255,255,255,0);
+	background-color:rgba(255,255,255,0);
+	-webkit-box-shadow:0px 0px 0px rgba(255,255,255,0);
+}
+
+@-webkit-keyframes alert-message-overlength {
+	0% {-webkit-transform: scale(1.2, 1.2);}
+	50% {opacity:0.7;}
+	75% {opacity:0.5;}
+	100% {-webkit-transform: scale(1.0, 1.0);}
+}
+
+@-webkit-keyframes alert-response {
+	0% {opacity:1;}
+	50% {opacity:1;}
+	75% {opacity:1;}
+	100% {opacity:0.0;}
+}
+
+</style>
+
+<script>
+var bg = chrome.extension.getBackgroundPage();
+var console = bg.console;
+
+// page controller
+var popup = {
+	port:undefined,
+	maxMessage:150,
+	info: {
+		basic:undefined,
+		contents:undefined,
+		snapshot:undefined
+	},
+	thumbnail: {
+		index:0,
+		images:[],
+		enable:false
+	},
+	options:undefined,
+	ai:devnight.controls.activityIndicator,
+	init: function() {
+		// preparing
+		popup.options = JSON.parse(localStorage["yozim.option"]);
+		popup.ai.init({
+			width:$("#activity-indicators").width(),
+			height:$("#activity-indicators").height(),
+			paddingRatio:0.15,
+			barHeightRatio:0.1,
+			barWidth:4,
+			canvas:document.getElementById("activity-indicator")
+		});
+		
+		// hide stuffs
+		$("#activity-indicators").hide();
+		$("#attachments-wrap").hide();
+		
+		// add events listener
+		$("#message").one("click", popup.messageFocused);		
+		$("#message").keyup(function(e) {
+			popup.messageDidChangeText();
+			/* Disabled feature
+			if (event.keyCode != 13)
+				popup.messageDidChangeText();
+			else {
+				popup.addMessage();
+				window.close();
+			}
+			*/
+		});
+		$("#message").select(popup.messageSelectedTextToClipboard);
+		$("#thumbnail").dblclick(popup.thumbnailNewWindowWithImage);
+		$("#thumbnail-checker").click(popup.thumbnailOptionChecked);
+		$(".thumbnavi-prev").click(popup.thumbnailShowPrevImage);
+		$(".thumbnavi-next").click(popup.thumbnailShowNextImage);
+		$("#post").click(popup.addMessage);
+		
+		// connect to background
+		popup.port = chrome.extension.connect({name: "popup"});
+		popup.port.onMessage.addListener(popup.onMessage);
+		console.log("asdasd");
+		popup.requestBasicInfo();
+		console.log("asdasd2");
+	},
+	saveOption: function(o) {
+		popup.port.postMessage({action:"saveOption", option:o});
+	},
+	alert: function(m, sec) {
+		$(".alert-text").text(m);
+		$(".alert").css("-webkit-animation", "none");
+		window.setTimeout(function() {
+			$(".alert").css("-webkit-animation", "alert-response " + sec + "s 0 linear");
+		}, 0);
+	},
+	thumbnailShowPrevImage: function() {
+		if ((popup.thumbnail.index - 1) >= 0)
+			popup.thumbnailShowImage(popup.thumbnail.index - 1);
+	},
+	thumbnailShowNextImage: function() {
+		if ((popup.thumbnail.index + 1) < popup.thumbnail.images.length)
+			popup.thumbnailShowImage(popup.thumbnail.index + 1);
+	},
+	thumbnailChangeCount: function(c) {
+		$("#tumbnail-count-index").text(c.index);
+		$("#tumbnail-count-max").text(c.max);
+	},
+	thumbnailShowImage: function(i) {
+		if (popup.thumbnail.images.length > 0) {
+			$("#thumbnail").attr("src", popup.thumbnail.images[i]);
+			popup.thumbnailChangeCount({index:i + 1, max:popup.thumbnail.images.length});
+			popup.thumbnail.index = i;
+		}
+		else 
+			popup.thumbnail.index = 0;
+	},
+	thumbnailIsChecked: function() {
+		return $("#thumbnail-checker").is(':checked');
+	},
+	thumbnailOptionChecked: function() {
+		if (popup.thumbnailIsChecked()) {
+			window.setTimeout(popup.requestContentsImages, 300);
+			popup.aiStartAnimation();
+			$("#attachments-wrap").show();
+			$("#messages").width($("#messages").width() - $("#attachments").width());
+			popup.thumbnail.enable = true;
+		}
+		else {
+			popup.aiStopAnimation();
+			$("#messages").width($("#messages").width() + $("#attachments").width());
+			$("#attachments-wrap").hide();
+			popup.thumbnail.enable = false;
+		}
+		popup.saveOption({key:"thumbnail", value:popup.thumbnail.enable});
+	},
+	thumbnailNewWindowWithImage: function() {
+		if (popup.thumbnail.images.length > 0) {
+			chrome.tabs.create({
+				url: popup.thumbnail.images[popup.thumbnail.index]
+			});
+		}
+	},
+	aiStartAnimation: function() {
+		$("#activity-indicators").show();
+		popup.ai.start();
+	},
+	aiStopAnimation: function() {
+		$("#activity-indicators").hide();
+		popup.ai.stop();
+	},
+	messageChangeText: function(msg, mode) {
+		if (mode == "add") {
+			msg = $("#message").val() + msg;
+		}
+		$("#message").val(msg);
+		popup.messageDidChangeText();
+	},
+	messageDidChangeText: function() {
+		var postmsg = $("#message").val();
+		var count = postmsg.length;
+		if (popup.maxMessage < count)
+			count = popup.maxMessage - count;
+		$("#count").css("color",  (count >= 0) ? "black" : "red");
+		$("#count").text(count);
+	},
+	messageSelectedTextToClipboard: function() {
+		document.execCommand('Copy');
+	},
+	messageCopyToClipboard: function() {
+		$(".clipboard").val($("#message").val());
+		$(".clipboard").focus();
+		$(".clipboard").select();
+		document.execCommand('Copy');
+		$("#message").focus();
+	},
+	messageFocused: function() {
+		$("#messages").height($("#messages").height() + 13);
+	},
+	addMessage: function() {
+		var m = $("#message").val();
+		if (m.length > popup.maxMessage) {
+			$("#count").css("-webkit-animation", "none");
+			window.setTimeout(function() {
+				$("#count").css("-webkit-animation", "alert-message-overlength 1s 3 linear");
+			}, 0);
+			return;
+		}
+		
+		var imgUrl = "";
+		if (popup.thumbnailIsChecked() && popup.thumbnail.images.length > 0)
+			imgUrl = popup.thumbnail.images[popup.thumbnail.index];
+
+		popup.port.postMessage({action:"addMessage", message:m, imgUrl:imgUrl});
+	},
+	requestBasicInfo: function() {
+		popup.port.postMessage({action:"basicInfo"});
+	},
+	requestSnapshot: function() {
+		if (popup.info.shortenUrl.key.length > 0)
+			popup.port.postMessage({action:"snapshot", key:popup.info.shortenUrl.key});
+		else
+			console.log("ERROR, the application doesn't have any key. You should restart the application.")
+	},
+	requestContentsImages: function() {
+		popup.port.postMessage({action:"contentsImages"});
+	},
+	onMessage: function(msg) {
+		// console.log("popup onMessage", msg.action, msg);
+		if (msg.action == "basicInfo") {
+			if (!msg.verified) {
+				chrome.tabs.create({
+					url:"chrome-extension://dpmpjbjfcopoeophcmpafeplohjjoclh/options.html" 
+				});
+				window.close();
+				return;
+			}
+			popup.info.basic = msg.info;
+			var url = (msg.info.shortUrl.shortUrl.length > 0) ? msg.info.shortUrl.shortUrl : msg.info.url;
+			var postmsg = msg.info.title + " " + url;
+			popup.messageChangeText(postmsg);
+			
+			if (popup.options.thumbnail) {
+				$("#thumbnail-checker").attr("checked", true);
+				popup.thumbnailOptionChecked();
+			}
+			
+			if (popup.options.clipboard) {
+				popup.messageCopyToClipboard();
+			}
+		}
+		else if (msg.action == "snapshot") {
+			popup.info.snapshot = msg.info;
+		}
+		else if (msg.action == "contentsInfo") {
+			popup.info.contents = msg.info;
+			if (msg.info.selectedText.length > 0) {
+				popup.messageChangeText(" \"" + msg.info.selectedText + "\"", "add") ;
+			}
+		}
+		else if (msg.action == "contentsImages") {
+			if (popup.thumbnailIsChecked()) {
+				popup.aiStopAnimation();
+				popup.thumbnail.images = msg.images;
+				popup.thumbnailShowImage(0);
+			}
+		}
+		else if (msg.action == "addMessage") {
+			if (msg.status == "ok")
+				popup.alert("전송이 완료되었습니다.", 2);
+			else
+				popup.alert("전송실패, " + msg.error, 4);
+		}
+	}
+};
+
+$(document).ready(function() {
+	popup.init();
+});
+
+</script>
+<div id="doc">
+	<div id="contents">
+		<div id="top">
+			<h1><img style="height:25px;vertical-align:middle;padding-left:5px;margin-right:10px" src="image/logo.titlebar.png" />요즘페이지, 뜨는페이지, 현재 페이지를 공유하세요.</h1>
+		</div>
+		<div id="middle">
+			<div id="archive">
+				<div id="attachments-wrap">
+					<div id="attachments">
+						<div id="thumbnails">
+							<img id="thumbnail" src="image/button.thumbnail.png"/>
+						</div>
+						<div id="activity-indicators"><canvas id="activity-indicator"></canvas></div>
+					</div>
+					<div id="thumbnavis">
+						<div id="thumbnavi-buttons" >
+						<a class="thumbnavi-prev"></a>
+						<a class="thumbnavi-next"></a>
+						</div>
+						<div id="tumbnail-count"><span id="tumbnail-count-index">0</span> / <span id="tumbnail-count-max">0</span></div>
+					</div>
+				</div>
+				<div id="messages">
+					<textarea id="message"></textarea>
+				</div>
+			</div>
+			<div id="buttons">
+				<div class="button button-text button-left"><input type="checkbox" id="thumbnail-checker">사진첨부</div>
+				<div class="button button-right"><input type="button" value="" id="post"></div>
+				<div class="button button-text button-right" id="count">0</div>
+			</div>
+		</div>
+	</div>
+</div>
+<div class="alert"><div class="alert-text"></div></div>
+<div class="registers"><textarea class="clipboard"></textarea></div>
+</body>
+</html>

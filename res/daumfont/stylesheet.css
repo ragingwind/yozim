@@ -1,0 +1,23 @@
+/*
+ * Copyright (c) 2010 devnight.net. CSS code rights reserved.  Use of this
+ * source code is governed by a MIT license that can be found in the
+ * LICENSE file.
+ *
+ * DAUM font license rights reserved. Please visit to http://durl.me/4jspi 
+ * If you need more information.
+ */
+@font-face {
+	font-family: 'Daum_Regular';
+	src: url('Daum_Regular.eot');
+	src: local('☺'), url('Daum_Regular.woff') format('woff'), url('Daum_Regular.ttf') format('truetype'), url('Daum_Regular.svg#webfontw28k2xtN') format('svg');
+	font-weight: normal;
+	font-style: normal;
+}
+
+@font-face {
+	font-family: 'Daum_SemiBold';
+	src: url('Daum_SemiBold.eot');
+	src: local('☺'), url('Daum_SemiBold.woff') format('woff'), url('Daum_SemiBold.ttf') format('truetype'), url('Daum_SemiBold.svg#webfontJY9BDD6R') format('svg');
+	font-weight: normal;
+	font-style: normal;
+}

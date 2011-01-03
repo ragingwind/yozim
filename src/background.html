@@ -1,0 +1,159 @@
+<!--
+ * Copyright (c) 2010 devnight.net. All rights reserved.  Use of this
+ * source code is governed by a MIT license that can be found in the
+ * LICENSE file.
+-->
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="Content-type" content="text/html; charset=utf-8">
+	<script src="js/oauth/oauth.js"></script>
+	<script src="js/oauth/sha1.js"></script>
+	<script src="js/yozm.js"></script>
+	<script src="js/durl.me.js"></script>
+</head>
+<script>
+var app = {
+	sid: {options:"yozim.option"},
+	ports:[],
+	options:{
+		thumbnail:false,
+		sortphoto:false,
+		clipboard:false
+	},
+	init: function() {
+		app.loadOptions();
+		yozm.init();
+		yozm.delegate = this;	
+		chrome.extension.onConnect.addListener(app.onConnect);
+		
+		if (!yozm.verified()) {
+			chrome.tabs.create({
+				url:"chrome-extension://dpmpjbjfcopoeophcmpafeplohjjoclh/options.html" 
+			});
+		}
+			
+		console.log("app(" + chrome.extension.getURL("")  + ") is initialized. " + Date());
+	},
+	loadOptions: function() {
+		if (localStorage[app.sid.options] == undefined)
+			localStorage[app.sid.options] = JSON.stringify(app.options);
+		app.options = JSON.parse(localStorage[app.sid.options]);
+	},
+	saveOptions: function() {
+		localStorage[app.sid.options] = JSON.stringify(app.options);
+	},
+	saveOption: function(option) {
+		app.options[option.key] = option.value;
+		localStorage[app.sid.options] = JSON.stringify(app.options);
+	},
+	yozmDidReceiveAccessToken: function() {
+		app.ports["option"].postMessage({action:"accessToken"})
+	},
+	yozmDidReceiveRequestToken: function(r) {
+		app.ports["option"].postMessage({action:"requestToken", url:r.url})
+	},
+	yozmDidFailWithError: function(r) {
+		app.ports["option"].postMessage({action:"error", error:r.error});
+	},
+	yozmDidReceiveResponse: function(r) {
+		if (r.action == "addMessage")
+			app.ports["popup"].postMessage({action:r.action, status:r.status, error:r.error});
+	},
+	onConnect: function(port) {
+		if (port.name == "popup") {
+			port.onMessage.addListener(app.onMessageFromPopup);
+			app.ports["popup"] = port;
+		}
+		else if (port.name == "cs") {
+			port.onMessage.addListener(app.onMessageFromContentScript);
+			app.ports["cs"] = port;
+		}
+		else if (port.name == "option") {
+			port.onMessage.addListener(app.onMessageFromOption);
+			app.ports["option"] = port;
+		}
+		port.onDisconnect.addListener(app.onDisconnect);
+	},
+	onDisconnect: function(port) {},
+	onMessageFromContentScript: function(msg) {
+		// console.log("Bg onMessage from cs", msg.action, msg);
+		
+		if (msg.action == "contentsInfo") {
+			app.ports["popup"].postMessage({action:"contentsInfo", info:msg.info});
+		}
+		else if (msg.action == "contentsImages") {
+			app.ports["popup"].postMessage({action:"contentsImages", images:msg.images});
+		}
+	},
+	onMessageFromPopup: function(msg) {
+		// console.log("Bg onMessage from popup", msg.action, msg);
+		if (msg.action == "basicInfo") {
+			if (!yozm.verified()) {
+				app.ports["popup"].postMessage({action:"basicInfo", info:undefined, verified:false});
+				return;
+			}
+			chrome.tabs.getSelected(null, function(tab) {
+				var info = {
+					title:tab.title,
+					url:tab.url,
+					shortUrl:undefined
+				};
+				
+				// return basic information first.
+				info.shortUrl = durl.me.shorten(info.url);
+				app.ports["popup"].postMessage({action:"basicInfo", info:info, verified:true});
+				
+				// request a contents information.
+				chrome.tabs.getSelected(null, function(tab) {
+					chrome.tabs.executeScript(tab.id, {file: "js/contentsinfo.js"});
+				});
+			});
+		}
+		else if (msg.action == "snapshot") {
+			var r = app.jsonRequest("http://durl.me/" + msg.key + ".status?type=json");
+			var image = {imgUrlSmall:"", imgUrlBig:""};
+			
+			if (r != undefined && r.status == "ok" && r.imageReady == "yes") {
+				image.imgUrlSmall = r.imageUrlSmall;
+				image.imgUrlBig = r.imageUrlBig;
+			}
+			app.ports["popup"].postMessage({action:"snapshot", image:image});
+		}
+		else if (msg.action == "contentsImages") {
+			chrome.tabs.getSelected(null, function(tab) {
+				chrome.tabs.executeScript(tab.id, {file: "js/contentsimages.js"});
+			});
+		}
+		else if (msg.action == "saveOption") {
+			app.saveOption(msg.option);
+		}
+		else if (msg.action == "addMessage") {
+			yozm.addMessage({message:msg.message, imgUrl:msg.imgUrl});
+		}
+	},
+	onMessageFromOption: function(msg) {
+		console.log("bg onMessage from option", msg.action, msg);
+	
+		if (msg.action == "requestToken") {
+		    yozm.requestRequestToken();
+		}
+		else if (msg.action == "accessToken") {
+			yozm.requestAccessToken(msg.verifier);
+		}
+		else if (msg.action == "verifyToken") {
+			app.ports["option"].postMessage({action:msg.action, verified:yozm.verified()});
+		}
+		else if (msg.action == "resetToken") {
+			yozm.reset();
+			app.ports["option"].postMessage({action:"verifyToken", verified:yozm.verified()});
+		}
+		else if (msg.action == "saveOption") {
+			app.saveOption(msg.option);
+		}
+	}
+};
+
+app.init();
+</script>
+</html>

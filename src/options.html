@@ -1,0 +1,313 @@
+<!--
+ * Copyright (c) 2010 devnight.net. All rights reserved.  Use of this
+ * source code is governed by a MIT license that can be found in the
+ * LICENSE file.
+-->
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="Content-type" content="text/html; charset=utf-8">
+	<script src="js/jquery-1.4.4.min.js"></script>
+	<link href="css/dncontrols-twitter.css" media="screen, projection" rel="stylesheet" type="text/css">
+	<link rel="stylesheet" href="font/stylesheet.css" type="text/css" charset="utf-8">
+</head>
+
+<script>
+var console = chrome.extension.getBackgroundPage().console;
+
+var option = {
+	port:undefined,
+	options:undefined,
+	sid: {options:"yozim.option"},
+	init: function() {
+		option.loadOptions();
+		option.state("verifyToken");
+		
+		// add event listen	
+		$("#request-accesstoken").click(option.requestAuthorization);
+		$("#thumbnail").click(function() {option.saveOption("thumbnail");});
+		$("#sortphoto").click(function() {option.saveOption("sortphoto");});
+		$("#clipboard").click(function() {option.saveOption("clipboard");});
+		
+		option.port = chrome.extension.connect({name: "option"});
+		option.port.onMessage.addListener(option.onMessage);
+		option.port.postMessage({action:"verifyToken"});
+	},
+	saveOption: function(t) {
+		option.port.postMessage({
+			action:"saveOption", 
+			option:{
+				key:t, 
+				value:($("#" + t).is(':checked'))
+			}
+		});
+	},
+	loadOptions: function() {
+		var options = JSON.parse(localStorage[option.sid.options]);
+		(options.thumbnail) ? $("#thumbnail").attr("checked", true) 
+								: $("#thumbnail").attr("checked", false);
+		(options.sortphoto) ? $("#sortphoto").attr("checked", true) 
+								: $("#sortphoto").attr("checked", false);
+		(options.clipboard) ? $("#clipboard").attr("checked", true) 
+								: $("#clipboard").attr("checked", false);
+	},
+	requestAuthorization: function() {
+		c = $("#request-accesstoken").val();
+		if (c == "인증코드요청") {
+			option.state("requestToken");
+			option.port.postMessage({action:"requestToken"});
+		}
+		else if (c == "인증요청") {
+			v = $("#verifier-code").val();
+			if (v.length > 0) {
+				option.state("accessToken");
+				option.port.postMessage({action:"accessToken", verifier:v});
+			}
+		}
+		else if (c == "재인증") {
+			option.port.postMessage({action:"resetToken"});
+		}
+	},
+	onMessage: function(msg) {
+		console.log("option onMessage", msg);
+		if (msg.action == "requestToken") {
+		    option.didReceiveRequestToken(msg.url);
+		}
+		else if (msg.action == "accessToken") {
+			option.didReceiveAccessToken();
+		}
+		else if (msg.action == "addMessage") {
+			yozm.addMessage({imgUrl:msg.imgUrl, message:msg.message});
+		}
+		else if (msg.action == "verifyToken") {
+			if (msg.verified)
+				option.state("verifiedToken");
+			else
+				option.state("readyToRequestToken");
+		}
+		else if (msg.action == "error") {
+			option.state("readyToRequestToken");
+			alert(msg.error);
+		}
+	},
+	state: function(s) {
+		var atDisable = "";
+		var vcDisable = "";
+		var atValue;
+		var vcPlaceHolder = "발급받은 인증코드";
+		
+		$(".warning").show();
+		
+		if (s == "verifyToken") {
+			atDisable = "disabled";	
+			atValue = "인증확인중";
+			vcDisable = "disabled";	
+			vcPlaceHolder = "";
+		}
+		else if (s == "readyToRequestToken") {
+			vcDisable = "disabled";	
+			vcPlaceHolder = "인증코드를 요청하세요";
+			atValue = "인증코드요청";
+		}
+		else if (s == "requestToken") {
+			vcPlaceHolder = "인증코드를 입력하세요";
+			atValue = "인증요청";
+		}
+		else if (s == "verifiedToken") {
+			vcDisable = "disabled";	
+			atValue = "재인증";
+			vcPlaceHolder = "인증되었습니다.";
+			$(".warning").hide();
+		}
+		else if (s == "accessToken") {
+			atDisable = "disabled";
+			vcDisable = "disabled";
+			atValue = "인증요청중";
+		}
+
+		$("#request-accesstoken").attr("disabled", atDisable);
+		$("#request-accesstoken").val(atValue);
+		$("#verifier-code").val("");
+		$("#verifier-code").attr("disabled", vcDisable);
+		$("#verifier-code").attr("placeholder", vcPlaceHolder);
+	},
+	didReceiveRequestToken: function(url) {
+		chrome.windows.create({url:url, width:400, height:380, type:"popup"})
+	},
+	didReceiveAccessToken: function(url) {
+		option.state("verifiedToken");
+	}
+};
+
+$(document).ready(function() {
+	option.init();
+});
+
+</script>
+<style>
+* {
+	font-family:"Daum_Regular";
+	text-shadow: 0 0 1px rgba(0,0,0,0.3);
+	font-smooth:auto;
+}
+
+body {
+	padding:0px;
+	margin:0px;
+	background-color:#eee6d9;
+}
+
+h1 {
+	padding: 0px;
+	margin: 0px;
+	font-size:20px;
+}
+
+h2 {
+	padding: 0px;
+	margin: 0px;
+}
+
+#top {
+	width:100%;
+	height:30px;
+	padding:3px;
+	background: -webkit-gradient(linear,0 0,0 100%,from(#eee),to(#eaeaea));
+	-webkit-box-shadow:0px 1px 4px #111;
+}
+
+#middle {
+	margin: 10px auto 30px;
+	width: 800px;
+	height:100%;
+	position: relative; 
+	overflow: hidden;
+	-webkit-border-top-left-radius: 10px;
+	-webkit-border-top-right-radius: 10px;
+	padding:15px;
+	background-color:#fff;
+}
+
+#options {
+	float: left;
+	width:540px;
+	height:100%;
+	position:relative;
+
+}
+
+#side-right-section {
+	float: right;
+	width: 230px;
+	margin: 0 0 20px 0;
+	line-height: 15px;
+	font-size: 0.7em;
+	padding: 5px 0 0 0;
+	position: relative; 
+}
+
+th {
+	text-align: left;
+	width: 8em;
+	padding-top: 0.4em;
+	font-weight: normal;
+	line-height: 0.8em;
+	vertical-align:top;
+}
+
+td {
+	word-break:break-all;
+	vertical-align:top;
+	line-height: 0.8em;
+	padding-bottom:2em;
+}
+
+#footer {
+	text-align: center;
+	clear:both;
+	padding-top:5em;
+}
+
+small {
+	font-size:0.5em;
+}
+
+input[type="checkbox"] {
+	margin-right:0.5em;
+}
+
+.tip-bar {
+	height:1px;
+	width:90%;
+	background-color:#eee6d9;
+}
+
+.copyright {
+	font: 0.8em "Lucida Grande", sans-serif;
+}
+
+.warning {
+	color:red;
+}
+
+</style>
+<body>
+<div id="doc">
+	<div id="top">
+		<h1 style="vertical-align:baseline"><img src="image/logo.titlebar.png" style="vertical-align:-30%" height="30px" alt="logo"> 옵션</h1>
+	</div>
+	<div id="middle">
+		<div id="options">
+		<table>
+			<tr>
+				<th>다음 OAuth 인증</th>
+				<td><input type="text" disabled="disabled" placeholder="" value="" id="verifier-code"><input type="button" disabled="disabled" value="" id="request-accesstoken"><br/>
+					<small class="warning">Yoz!m을 사용하기 위해서는 반드시 다음 인증을 거쳐야 합니다.<br/><br/></small>
+					<small>다음에서 제공하는 인증(OAuth)를 사용하면 매번 서비스에 로그인하지 않고도 Yoz!m을 사용할 수 있습니다. 그러기 위해서는 사용자가 다음에 Yozim어플리케이션에 대해서 인증요청을 통해서 인증코드를 받아 입력하여야 합니다.</small>
+				</td>
+			</tr>
+			<tr>
+				<th>첨부파일</th>
+				<td>
+					<input type="checkbox" id="thumbnail">사진 자동 첨부<br/>
+					<small>사진 첨부를 매번 자동으로 실행합니다. 현재 페이지에서 사진관련 URL을 수집하는 과정에서 다소 시간이 걸릴 수 있습니다.</small>
+				</td>
+			</tr>
+			<!-- Disabled feature
+			<tr>
+				<th></th>
+				<td>
+					<input type="checkbox" id="sortphoto">사진정렬<br/>
+					<small>수집된 사진을 다시 사진의 사이즈 크기 순으로 다시 정렬합니다. 다소 시간이 걸릴 수 있습니다.</small>
+				</td>
+			</tr>
+			-->
+			<tr>
+				<th>Short URL<br/><small>다음의 <a href="http://durl.me">durl.me</a>를 기본적으로 사용합니다.</small></th>
+				<td>
+					<input type="checkbox" id="clipboard">메세지 자동복사<br/>
+					<small>전송하기위한 메세지(문서제목, Shorten URL, 선택된 문장)을 자동으로 클립보드에 복사합니다.</small>
+				</td>
+			</tr>
+		</table>
+		</div>
+		<div id="side-right-section">
+			<h3>인증코드요청과 인증요청</h3>
+			<p>인증코드요청과 인증요청은 구분되는 과정입니다. 인증코드는 사용자가 다음 웹사이트에서 직접 받는 과정이며 인증요청은 사용자가 다음으로 받은 인증코드를 사용해서 Yoz!m이 인증하는 과정입니다. 더 자세한 설명은 <a href="http://dna.daum.net/apis/yozm">다음의 OAuth 설명</a>을 참고하세요.</p>
+			<h3>다음 인증 데모</h3>
+			<p>자세한 데모는 아래 동영상을 참고하세요. </p>
+			<div class="tip-bar"></div>
+			<h3>Tip</h3>
+			<p>만약 생성된 인증코드 요청창을 닫아 버렸다면 옵션페이지를 리로딩하세요.</p>
+			<div class="tip-bar"></div>
+			<h3>오픈소스</h3>
+			<p>어플리케이션은 소스를 공개하고 있습니다. 다음 <a href="">경로</a>를 참고하세요 </p>
+			<div class="tip-bar"></div>
+		</div>
+		<div id="footer">
+			<div class="copyright">devnight.net © 2010</div>
+		</div>
+	</div>	
+</div>
+</body>
+</html>

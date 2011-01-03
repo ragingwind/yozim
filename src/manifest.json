@@ -1,0 +1,19 @@
+{
+	"name": "Yoz!m",
+	"version": "0.0.9",
+	"icons": {
+		"128": "icon.png"
+	},
+	"browser_action": {
+		"default_icon": "icon.png",
+		"default_title": "Yoz!m",
+		"default_popup": "popup.html"
+ 	},
+	"background_page": "background.html",
+	"permissions": [
+		"tabs",
+		"http://*/*", 
+		"https://*/*"		
+	],
+	"options_page": "options.html"
+}
