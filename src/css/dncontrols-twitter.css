@@ -71,18 +71,15 @@ textarea {
 	overflow-x: hidden;
 	overflow-y: auto;
 	white-space: pre-wrap;
-	-webkit-border-radius: 8px;
 	padding:8px;
 }
 
 textarea:hover {
 	border: 1px solid #888;
 	cursor: text!important;
-	-webkit-border-radius: 8px;
 }
 
 textarea:focus {
 	border: 1px solid #888;
 	cursor: text!important;
-	-webkit-border-radius: 8px;
 }

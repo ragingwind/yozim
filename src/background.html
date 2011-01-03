@@ -29,7 +29,7 @@ var app = {
 		
 		if (!yozm.verified()) {
 			chrome.tabs.create({
-				url:"chrome-extension://dpmpjbjfcopoeophcmpafeplohjjoclh/options.html" 
+				url:chrome.extension.getURL("options.html")
 			});
 		}
 			
