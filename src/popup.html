@@ -119,31 +119,32 @@ img {
 	top:0px;
 	left:0px;
 	width:463px;
-	height:122px;
+	height:121px;
 	margin-bottom:3px;
-	background-color:#fff;
+	text-align:center;
 	-webkit-border-radius: 8px;
+	background-color:#fff;
 	border:1px solid #999;
 }
 #messages:hover {
 }
 
 #messages:focus, #messages:active {
-	border:1px solid rgba(244, 68, 110, 1.0);
+	border:1px solid #eb4e75;
 }
 
 #message {
+	margin:5px;
+	overflow:hidden;
 	position:relative;
-	font: 0.9em 'Daum_Regular';
-	width:96%;
-	height:96%;
-	border:0px solid #999;
+	width:94%;
+	height:100px;
+	font: 14px 'Daum_Regular';
+	border:0px solid red;
 }
 
-#message:hover, #message:focus {
-}
-
-#message:active {
+#message:hover, #message:focus, #message:active {
+	border:0px solid red;
 }
 
 .alert {
@@ -533,7 +534,7 @@ var popup = {
 		if (msg.action == "basicInfo") {
 			if (!msg.verified) {
 				chrome.tabs.create({
-					url:"chrome-extension://dpmpjbjfcopoeophcmpafeplohjjoclh/options.html" 
+					url:chrome.extension.getURL("options.html") 
 				});
 				window.close();
 				return;

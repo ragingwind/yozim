@@ -6,8 +6,8 @@
  * Daum Yozm rights reserved.
  */
 
-var YOZIM_CONSUMER_KEY = "33a1d7df-3bda-4f50-9b69-e081e4274dab";
-var YOZIM_CONSUMER_SECRET_KEY = "P393CFJW7b8JZAKS5X2yz4gBZw-uiOKLxZyukAbiLCj6qA.2XLdRIg00";
+var YOZIM_CONSUMER_KEY = "YOUR_COSUMER_KEY";
+var YOZIM_CONSUMER_SECRET_KEY = "YOUR_SECRET_KEY";
 
 var yozm = {
 	delegate: undefined,
