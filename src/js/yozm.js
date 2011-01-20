@@ -158,7 +158,7 @@ var yozm = {
 		}
 
 		var url = om.action + "?" + queryString.join("&");
-		if (om.message.parameters.oauth_callback == "oob") {
+		if (om.parameters.oauth_callback == "oob") {
 			// application mode
 			var xhr = new XMLHttpRequest();
 	        xhr.onreadystatechange = function() {
