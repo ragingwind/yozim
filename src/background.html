@@ -53,6 +53,9 @@ var app = {
 		app.options[option.key] = option.value;
 		localStorage[app.sid.options] = JSON.stringify(app.options);
 	},
+	yozmOnRequest: function(action, url) {
+		window.open (url, "daum oauth","location=1,status=1,scrollbars=1,width=100,height=100");
+	},
 	yozmDidReceiveAccessToken: function() {
 		app.ports["option"].postMessage({action:"accessToken"})
 	},

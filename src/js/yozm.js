@@ -72,7 +72,7 @@ var yozm = {
 	init: function(o) {
 		yozm.oauth.load();
 		yozm.oauth.message.parameters.oauth_consumer_key = o.ckey;
-		yozm.oauth.secret.cosumer = o.skey;
+		yozm.oauth.secret.consumer = o.skey;
 		yozm.oauth.message.parameters.oauth_callback = o.callback;
 		yozm.oauth.save();
 	},
