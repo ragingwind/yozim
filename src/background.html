@@ -9,10 +9,17 @@
 	<meta http-equiv="Content-type" content="text/html; charset=utf-8">
 	<script src="js/oauth/oauth.js"></script>
 	<script src="js/oauth/sha1.js"></script>
+	<script>
+	// global key setting
+	var YOZM_CONSUMER_KEY = "";
+	var YOZM_CONSUMER_SECRET_KEY = "";
+	</script>
+	<script src="js/yozm.key.js"></script>
 	<script src="js/yozm.js"></script>
 	<script src="js/durl.me.js"></script>
 </head>
 <script>
+	console.log(YOZM_CONSUMER_KEY, YOZM_CONSUMER_SECRET_KEY);
 var app = {
 	sid: {options:"yozim.option"},
 	ports:[],
@@ -23,7 +30,7 @@ var app = {
 	},
 	init: function() {
 		app.loadOptions();
-		yozm.init();
+		yozm.init({ckey:YOZM_CONSUMER_KEY, skey:YOZM_CONSUMER_SECRET_KEY});
 		yozm.delegate = this;	
 		chrome.extension.onConnect.addListener(app.onConnect);
 		
@@ -129,6 +136,7 @@ var app = {
 			app.saveOption(msg.option);
 		}
 		else if (msg.action == "addMessage") {
+			
 			yozm.addMessage({message:msg.message, imgUrl:msg.imgUrl});
 		}
 	},

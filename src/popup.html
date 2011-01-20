@@ -404,9 +404,7 @@ var popup = {
 		// connect to background
 		popup.port = chrome.extension.connect({name: "popup"});
 		popup.port.onMessage.addListener(popup.onMessage);
-		console.log("asdasd");
 		popup.requestBasicInfo();
-		console.log("asdasd2");
 	},
 	saveOption: function(o) {
 		popup.port.postMessage({action:"saveOption", option:o});

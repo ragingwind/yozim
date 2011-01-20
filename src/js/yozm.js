@@ -1,13 +1,13 @@
 /*
+ * yozm JavaScript Library v0.1
+ * https://github.com/ragingwind/yozim
+ *
  * Copyright (c) 2010 devnight.net. All rights reserved.  Use of this
  * source code is governed by a MIT license that can be found in the
  * LICENSE file.
  * 
  * Daum Yozm rights reserved.
  */
-
-var YOZIM_CONSUMER_KEY = "YOUR_COSUMER_KEY";
-var YOZIM_CONSUMER_SECRET_KEY = "YOUR_SECRET_KEY";
 
 var yozm = {
 	delegate: undefined,
@@ -26,7 +26,7 @@ var yozm = {
 			action: "",
 			method: "GET",
 			parameters: {
-				oauth_consumer_key: YOZIM_CONSUMER_KEY,
+				oauth_consumer_key:"",
 				oauth_signature_method: "HMAC-SHA1",
 				oauth_callback: "oob",
 				oauth_token: "",
@@ -34,7 +34,7 @@ var yozm = {
 			}
 		},
 		secret: {
-			consumer: YOZIM_CONSUMER_SECRET_KEY,
+			consumer:"",
 			token: "",
 			verified: false
 		},
@@ -69,8 +69,11 @@ var yozm = {
 			localStorage.removeItem(yozm.oauth.sid.secret);
 		}
 	},
-	init: function() {
+	init: function(o) {
 		yozm.oauth.load();
+		yozm.oauth.message.parameters.oauth_consumer_key = o.ckey;
+		yozm.oauth.secret.cosumer = o.skey;
+		yozm.oauth.save();
 	},
 	reset: function() {
 		yozm.oauth.reset();
@@ -142,6 +145,9 @@ var yozm = {
 		yozm.oauth.message.parameters.message = m.message;
 		yozm.oauth.sign();		
 		yozm.request(yozm.oauth.message, yozm.didReceiveResponse, "addMessage");
+	},
+	addMessageWithPost: function(m) {
+		
 	},
 	request: function(om, res, action) {
 		var queryString = [];
