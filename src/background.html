@@ -10,7 +10,7 @@
 	<script src="js/oauth/oauth.js"></script>
 	<script src="js/oauth/sha1.js"></script>
 	<script>
-	// global key setting
+	// global key setting, keys file is only in local.
 	var YOZM_CONSUMER_KEY = "";
 	var YOZM_CONSUMER_SECRET_KEY = "";
 	</script>
@@ -29,7 +29,7 @@ var app = {
 	},
 	init: function() {
 		app.loadOptions();
-		yozm.init({ckey:YOZM_CONSUMER_KEY, skey:YOZM_CONSUMER_SECRET_KEY});
+		yozm.init({ckey:YOZM_CONSUMER_KEY, skey:YOZM_CONSUMER_SECRET_KEY, callback:"oob"});
 		yozm.delegate = this;	
 		chrome.extension.onConnect.addListener(app.onConnect);
 		
