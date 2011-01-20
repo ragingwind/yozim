@@ -121,13 +121,14 @@ var yozm = {
 		yozm.oauth.message.parameters.oauth_token = "";
 		yozm.oauth.secret.token = "";
 		yozm.oauth.sign();
-		yozm.request(yozm.oauth.message, yozm.didReceiveRequestToken);
+
+		yozm.request(yozm.oauth.message, yozm.didReceiveRequestToken, "requestToken");
 	},
 	requestAccessToken: function(v) {
 		yozm.oauth.message.action = "https://apis.daum.net/oauth/accessToken";
 		yozm.oauth.message.parameters.oauth_verifier = v;
 		yozm.oauth.sign();	
-		yozm.request(yozm.oauth.message, yozm.didReceiveAccessToken);
+		yozm.request(yozm.oauth.message, yozm.didReceiveAccessToken, "accessToken");
 	},
 	didReceiveResponse: function(r) {
 		var res = JSON.parse(r.responseText);
@@ -157,14 +158,21 @@ var yozm = {
 		}
 
 		var url = om.action + "?" + queryString.join("&");
-		var xhr = new XMLHttpRequest();
-        xhr.onreadystatechange = function() {
-	 		if (xhr.readyState == 4) {
-				res({action:action, status:xhr.status, responseText:xhr.responseText});
+		if (om.message.parameters.oauth_callback == "oob") {
+			// application mode
+			var xhr = new XMLHttpRequest();
+	        xhr.onreadystatechange = function() {
+		 		if (xhr.readyState == 4) {
+					res({action:action, status:xhr.status, responseText:xhr.responseText});
+				}
 			}
-		}
 
-        xhr.open('GET', url, true);
-        xhr.send();
+	        xhr.open('GET', url, true);
+	        xhr.send();
+		}
+		else {
+			// web-service mode
+			yozm.delegate.yozmOnRequest(action, url);
+		}
 	}
 };
