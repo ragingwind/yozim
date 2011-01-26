@@ -1,0 +1,28 @@
+#yozim-sharebutton-button {
+	z-index:999991;
+	top:0px;
+	left:0px;
+	width:100px;
+	height:142px;
+	background-position:0px 0px;
+	background-repeat:no-repeat;
+	background-image:none;
+	opacity:1;
+	position:absolute;
+	border:0px solid red;
+}
+
+#yozim-sharebutton-blind {
+	left:0;
+	top:0;
+	padding:0;
+	margin:0;
+	z-index:999990;
+	background-image:none;
+	background-position:0px 0px;
+	background-repeat:repeat;
+	background-color:black;
+	opacity:0;
+	position:absolute;
+}
+

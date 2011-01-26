@@ -29,8 +29,8 @@ var yozm = {
 				oauth_consumer_key:"",
 				oauth_signature_method: "HMAC-SHA1",
 				oauth_callback: "oob",
-				oauth_token: "",
-				oauth_verifier: "",
+				oauth_token:"",
+				oauth_verifier:"",
 			}
 		},
 		secret: {
@@ -70,6 +70,7 @@ var yozm = {
 		}
 	},
 	init: function(o) {
+		yozm.delegate = o.delegate;
 		yozm.oauth.load();
 		yozm.oauth.message.parameters.oauth_consumer_key = o.ckey;
 		yozm.oauth.secret.consumer = o.skey;
@@ -146,33 +147,42 @@ var yozm = {
 		yozm.oauth.message.parameters.img_url = m.imgUrl;
 		yozm.oauth.message.parameters.message = m.message;
 		yozm.oauth.sign();		
-		yozm.request(yozm.oauth.message, yozm.didReceiveResponse, "addMessage");
-	},
-	addMessageWithPost: function(m) {
-		
+		yozm.request(yozm.oauth.message, yozm.didReceiveResponse, m.action);
 	},
 	request: function(om, res, action) {
 		var queryString = [];
+		
 		for(var key in om.parameters) {
 			queryString.push(key + "=" + encodeURIComponent(om.parameters[key]));
-		}
+		}		
+		var url = om.action + "?" + queryString.join("&") + "";
 
-		var url = om.action + "?" + queryString.join("&");
-		if (om.parameters.oauth_callback == "oob") {
-			// application mode
-			var xhr = new XMLHttpRequest();
-	        xhr.onreadystatechange = function() {
-		 		if (xhr.readyState == 4) {
-					res({action:action, status:xhr.status, responseText:xhr.responseText});
-				}
+		/*/
+		var data = queryString.join("&");
+		$.ajax({
+			type: "POST",
+			url:om.action,
+			dataType:'text',
+			data:data,
+			contentType: "application/x-www-form-urlencoded; charset=utf-8",
+			success:function(data, status, xhr) {
+				console.log(data, status, xhr);
+			},
+			error:function(xhr, stats, error){
+				console.log(xhr, status, error);
 			}
+		});
+		/**/
+		/**/
+		var xhr = new XMLHttpRequest();
+        xhr.onreadystatechange = function() {
+	 		if (xhr.readyState == 4) {
+				res({action:action, status:xhr.status, responseText:xhr.responseText});
+			}
+		}
 
-	        xhr.open('GET', url, true);
-	        xhr.send();
-		}
-		else {
-			// web-service mode
-			yozm.delegate.yozmOnRequest(action, url);
-		}
+        xhr.open('GET', url, true);
+        xhr.send();
+		/**/
 	}
 };

@@ -11,8 +11,11 @@
 		selectedText: document.getSelection().toString(),
 		ref: document.referrer,
 		name: window.name,
+		imgUrl:"",
 	};
-
-	var port = chrome.extension.connect({name: "cs"});
-	port.postMessage({action:"contentsInfo", info:contentsInfo});
+	chrome.extension.sendRequest(
+		{action:"contentsinfo:basic", info:contentsInfo},
+		function(r) {
+			
+	});
 })();

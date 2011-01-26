@@ -7,44 +7,65 @@
 <html>
 <head>
 	<meta http-equiv="Content-type" content="text/html; charset=utf-8">
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.4.4/jquery.min.js" type="text/javascript" charset="utf-8"></script>
 	<script src="js/oauth/oauth.js"></script>
 	<script src="js/oauth/sha1.js"></script>
 	<script>
 	// global key setting, keys file is only in local.
 	var YOZM_CONSUMER_KEY = "";
 	var YOZM_CONSUMER_SECRET_KEY = "";
+	var YOZM_CALLBACK = "";
 	</script>
 	<script src="keys"></script>
 	<script src="js/yozm.js"></script>
 	<script src="js/durl.me.js"></script>
 </head>
 <script>
+var dconsole = (false) ? chrome.extension.getBackgroundPage().console : {log:function(){}};
 var app = {
 	sid: {options:"yozim.option"},
 	ports:[],
 	options:{
+		version:"1.2.1",
 		thumbnail:false,
 		sortphoto:false,
-		clipboard:false
+		clipboard:false,
+		which:1
 	},
 	init: function() {
 		app.loadOptions();
-		yozm.init({ckey:YOZM_CONSUMER_KEY, skey:YOZM_CONSUMER_SECRET_KEY, callback:"oob"});
-		yozm.delegate = this;	
 		chrome.extension.onConnect.addListener(app.onConnect);
+		
+		yozm.init({
+			ckey:YOZM_CONSUMER_KEY, 
+			skey:YOZM_CONSUMER_SECRET_KEY, 
+			callback:YOZM_CALLBACK,
+			delegate:this
+		});
 		
 		if (!yozm.verified()) {
 			chrome.tabs.create({
 				url:chrome.extension.getURL("options.html")
 			});
 		}
-			
-		console.log("app(" + chrome.extension.getURL("")  + ") is initialized. " + Date());
+		chrome.extension.onRequest.addListener(app.onMessage);
+		
+		console.log("EXTENSION(" + chrome.extension.getURL("")  + ") IS INITIALIZED. " + Date());
+	},
+	updateOptionScheme: function() {
+		var version = "1.2.2";
+		if (!app.options.version || app.options.version != version) {
+			app.options.version = version;
+			app.options.which = 1;			
+			app.saveOptions();
+			console.log("UPDATE OPTIONS SCHEME", app.options);
+		}
 	},
 	loadOptions: function() {
 		if (localStorage[app.sid.options] == undefined)
 			localStorage[app.sid.options] = JSON.stringify(app.options);
 		app.options = JSON.parse(localStorage[app.sid.options]);
+		app.updateOptionScheme();
 	},
 	saveOptions: function() {
 		localStorage[app.sid.options] = JSON.stringify(app.options);
@@ -66,17 +87,15 @@ var app = {
 		app.ports["option"].postMessage({action:"error", error:r.error});
 	},
 	yozmDidReceiveResponse: function(r) {
-		if (r.action == "addMessage")
+		var cmd = r.action.split(":");
+		if (cmd[0] == "popup" && cmd[1] == "addMessage") 
 			app.ports["popup"].postMessage({action:r.action, status:r.status, error:r.error});
 	},
+	/* app events */
 	onConnect: function(port) {
 		if (port.name == "popup") {
 			port.onMessage.addListener(app.onMessageFromPopup);
 			app.ports["popup"] = port;
-		}
-		else if (port.name == "cs") {
-			port.onMessage.addListener(app.onMessageFromContentScript);
-			app.ports["cs"] = port;
 		}
 		else if (port.name == "option") {
 			port.onMessage.addListener(app.onMessageFromOption);
@@ -85,18 +104,29 @@ var app = {
 		port.onDisconnect.addListener(app.onDisconnect);
 	},
 	onDisconnect: function(port) {},
-	onMessageFromContentScript: function(msg) {
-		// console.log("Bg onMessage from cs", msg.action, msg);
+	onMessage: function(req, s, res) {
+		dconsole.log("BACKGROUND:DEFAULT MSG", req);
+		var cmd = req.action.split(":");
 		
-		if (msg.action == "contentsInfo") {
-			app.ports["popup"].postMessage({action:"contentsInfo", info:msg.info});
+		if (cmd[0] == "sharebutton") {
+			if (cmd[1] == "addMessage") {
+				chrome.tabs.getSelected(null, function(tab) {
+					var shortUrl = durl.me.shorten(tab.url)
+					var message = tab.title + " - " 
+						+ (shortUrl.shortUrl.length > 0 ? shortUrl.shortUrl : tab.url)
+						+ (req.info.selectedText.length > 0 ? " '" + req.info.selectedText + "'" : "");				
+					yozm.addMessage({action:req.action, message:message, imgUrl:req.info.imgUrl});
+				});
+			}
+			else if (cmd[1] == "getOptions") {
+				res({action:req.action, options:app.options});
+			}
 		}
-		else if (msg.action == "contentsImages") {
-			app.ports["popup"].postMessage({action:"contentsImages", images:msg.images});
-		}
+		else if (cmd[0] == "contentsinfo")
+			app.ports["popup"].postMessage({action:req.action, info:req.info});
 	},
 	onMessageFromPopup: function(msg) {
-		// console.log("Bg onMessage from popup", msg.action, msg);
+		dconsole.log("BACKGROUND: POPUP MSG", msg.action, msg);
 		if (msg.action == "basicInfo") {
 			if (!yozm.verified()) {
 				app.ports["popup"].postMessage({action:"basicInfo", info:undefined, verified:false});
@@ -115,7 +145,7 @@ var app = {
 				
 				// request a contents information.
 				chrome.tabs.getSelected(null, function(tab) {
-					chrome.tabs.executeScript(tab.id, {file: "js/contentsinfo.js"});
+					chrome.tabs.executeScript(tab.id, {file: "js/contentsinfo-basic.js"});
 				});
 			});
 		}
@@ -131,19 +161,18 @@ var app = {
 		}
 		else if (msg.action == "contentsImages") {
 			chrome.tabs.getSelected(null, function(tab) {
-				chrome.tabs.executeScript(tab.id, {file: "js/contentsimages.js"});
+				chrome.tabs.executeScript(tab.id, {file: "js/contentsinfo-images.js"});
 			});
 		}
 		else if (msg.action == "saveOption") {
 			app.saveOption(msg.option);
 		}
-		else if (msg.action == "addMessage") {
-			
-			yozm.addMessage({message:msg.message, imgUrl:msg.imgUrl});
+		else if (msg.action == "popup:addMessage") {
+			yozm.addMessage({action:msg.action, message:msg.message, imgUrl:msg.imgUrl});
 		}
 	},
 	onMessageFromOption: function(msg) {
-		console.log("bg onMessage from option", msg.action, msg);
+		dconsole.log("BACKGROUND: OPTION MSG:", msg.action, msg);
 	
 		if (msg.action == "requestToken") {
 		    yozm.requestRequestToken();

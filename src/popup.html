@@ -513,7 +513,7 @@ var popup = {
 		if (popup.thumbnailIsChecked() && popup.thumbnail.images.length > 0)
 			imgUrl = popup.thumbnail.images[popup.thumbnail.index];
 
-		popup.port.postMessage({action:"addMessage", message:m, imgUrl:imgUrl});
+		popup.port.postMessage({action:"popup:addMessage", message:m, imgUrl:imgUrl});
 	},
 	requestBasicInfo: function() {
 		popup.port.postMessage({action:"basicInfo"});
@@ -528,8 +528,9 @@ var popup = {
 		popup.port.postMessage({action:"contentsImages"});
 	},
 	onMessage: function(msg) {
-		// console.log("popup onMessage", msg.action, msg);
-		if (msg.action == "basicInfo") {
+		console.log("popup onMessage", msg.action, msg);
+		var cmd = msg.action.split(":");
+		if (cmd[0] == "basicInfo") {
 			if (!msg.verified) {
 				chrome.tabs.create({
 					url:chrome.extension.getURL("options.html") 
@@ -551,23 +552,25 @@ var popup = {
 				popup.messageCopyToClipboard();
 			}
 		}
-		else if (msg.action == "snapshot") {
+		else if (cmd[0] == "snapshot") {
 			popup.info.snapshot = msg.info;
 		}
-		else if (msg.action == "contentsInfo") {
-			popup.info.contents = msg.info;
-			if (msg.info.selectedText.length > 0) {
-				popup.messageChangeText(" \"" + msg.info.selectedText + "\"", "add") ;
+		else if (cmd[0] == "contentsinfo") {
+			if (cmd[1] == "basic") {
+				popup.info.contents = msg.info;
+				if (msg.info.selectedText.length > 0) {
+					popup.messageChangeText(" \"" + msg.info.selectedText + "\"", "add") ;
+				}
+			}
+			if (cmd[1] == "image") {
+				if (popup.thumbnailIsChecked()) {
+					popup.aiStopAnimation();
+					popup.thumbnail.images = msg.info;
+					popup.thumbnailShowImage(0);
+				}
 			}
 		}
-		else if (msg.action == "contentsImages") {
-			if (popup.thumbnailIsChecked()) {
-				popup.aiStopAnimation();
-				popup.thumbnail.images = msg.images;
-				popup.thumbnailShowImage(0);
-			}
-		}
-		else if (msg.action == "addMessage") {
+		else if (cmd[0] == "popup" && cmd[1] == "addMessage") {
 			if (msg.status == "ok")
 				popup.alert("전송이 완료되었습니다.", 2);
 			else

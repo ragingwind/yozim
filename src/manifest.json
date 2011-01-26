@@ -1,6 +1,6 @@
 {
 	"name": "Yoz!m",
-	"version": "1.0.1",
+	"version": "1.2.3",
 	"icons": {
 		"128": "icon.png"
 	},
@@ -15,5 +15,15 @@
 		"http://*/*", 
 		"https://*/*"		
 	],
+	"content_scripts": [{
+		"matches": [ "http://*/*", "https://*/*" ],
+		"css": ["css/sharebutton.css"],
+		"js": [
+			"js/jquery-1.4.4.min.js",
+			"js/raphael-1.5.2.js",
+			"js/sharebutton.js"
+		],
+		"run_at": "document_start"
+	}],
 	"options_page": "options.html"
 }
