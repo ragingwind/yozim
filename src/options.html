@@ -41,6 +41,19 @@ var option = {
 			}
 		});
 		
+		$("#sharebutton").click(function(e) {
+			var which = -1;
+			if ($("#sharebutton").is(':checked')) {
+				which = 1;
+				$('#which').removeAttr("disabled");
+				$('#which').val(which);
+			}
+			else {
+				$('#which').attr("disabled", "disabled");
+			}
+			option.saveOption("which", which);
+		});
+		
 		option.port = chrome.extension.connect({name: "option"});
 		option.port.onMessage.addListener(option.onMessage);
 		option.port.postMessage({action:"verifyToken"});
@@ -63,6 +76,14 @@ var option = {
 		(options.clipboard) ? $("#clipboard").attr("checked", true) 
 								: $("#clipboard").attr("checked", false);
 		$("#which").val(options.which);
+		if (options.which == -1) {
+			$('#which').val("0");
+			$('#which').attr("disabled", "disabled");
+			$("#sharebutton").attr("checked", false);
+		}
+		else
+			$("#sharebutton").attr("checked", true);
+		
 	},
 	requestAuthorization: function() {
 		c = $("#request-accesstoken").val();
@@ -309,9 +330,11 @@ input[type="checkbox"] {
 			<tr>
 				<th>Sharebutton<br/><small>페이지 내에서 간단하게 포스팅 할 수 있는 기능입니다. <a href='http://durl.me/5cxgk'>Cortex</a>의 기능을 구현한 것입니다.</small></th>
 				<td>
+					<input type="checkbox" id="sharebutton">Sharebutton 사용하기<br/>
+					<small>기본값은 활성화가 되어 있지 않습니다. 사용을 원하시면 체크후에 원하시는 버튼을 아래에서 셋팅하세요.</small><br/><br/>
 					<input type="text" readonly="readonly" size="2" placeholder="1" value="" id="which">번 마우스 버튼으로 Sharebutton 호출.<br/>
 					<small>문서내에서 Sharebutton을 호출할 마우스 번호를 지정합니다.입력박스에서 원하시는 버튼을 클릭하세요 단 오른쪽 마우스 (3번, 컨텍스트 메뉴용)은 지정되지 않습니다. <i>입력한 마우스 버튼을 0.5초 누르시면 Sharebutton이 나타납니다. 다음 <a href='http://www.youtube.com/watch?v=33iRvjgvzm4'>영상</a>을 참고하세요.</i><br/><br/></small>
-					<small class="notice">1. 해당 옵션은 페이지가 업데이트 되어야 적용됩니다.<br /></small>
+					<small class="notice">1. <b>상위</b> 옵션은 페이지가 업데이트 되어야 적용됩니다.<br /></small>
 					<small class="notice">2. 마우스 이벤트를 막은 페이지(국내블로그)에서는 동작이 안될 수 있습니다.<br /></small>
 					<small class="notice">3. 3버튼 이상의 마우스가 없어서 4버튼에서의 동작은 보장 할 수 없습니다.<br /></small>
 				</td>

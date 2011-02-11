@@ -26,11 +26,11 @@ var app = {
 	sid: {options:"yozim.option"},
 	ports:[],
 	options:{
-		version:"1.2.1",
+		version:"1.2.4",
 		thumbnail:false,
 		sortphoto:false,
 		clipboard:false,
-		which:1
+		which:-1
 	},
 	init: function() {
 		app.loadOptions();
@@ -53,10 +53,10 @@ var app = {
 		console.log("EXTENSION(" + chrome.extension.getURL("")  + ") IS INITIALIZED. " + Date());
 	},
 	updateOptionScheme: function() {
-		var version = "1.2.2";
+		var version = "1.2.4";
 		if (!app.options.version || app.options.version != version) {
 			app.options.version = version;
-			app.options.which = 1;			
+			app.options.which = -1;			
 			app.saveOptions();
 			console.log("UPDATE OPTIONS SCHEME", app.options);
 		}

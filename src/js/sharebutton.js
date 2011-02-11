@@ -286,7 +286,8 @@ var YozmShareButton = {
 	track: function(e) {
 		var _this = YozmShareButton;		
 		var w = $(window).width(), h = $(window).height();
-		if (_this.options.which != e.which
+		if (_this.options.which == -1
+			|| _this.options.which != e.which
 			|| e.keyCode != 0 
 			|| e.metaKey == true || e.shiftKey == true || e.altKey == true || e.ctrlKey == true
 			|| _this.tracking.didstart 
